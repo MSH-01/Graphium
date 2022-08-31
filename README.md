@@ -4,10 +4,10 @@
 To run this application, you need to ensure that you have Java, Gradle and MySQL installed on your computer. 
 
 First ensure that you have cloned the project from the git repository, found here:
-https://git.cardiff.ac.uk/c21011322/graphium
+https://github.com/MSH-01/Graphium.git
 This can be done through the command line using
 ```sh
-git clone https://git.cardiff.ac.uk/c21011322/graphium
+git clone https://github.com/MSH-01/Graphium.git
 ```
 
 Once you have downloaded the repository, run the ‘build_db.sql’ file on your MySQL localhost instance. This can be done using MySQL Workbench or it can be done using the command line using:
