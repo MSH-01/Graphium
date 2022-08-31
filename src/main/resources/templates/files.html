@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main-layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>My Files</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/files.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+            rel="stylesheet"
+            href="https://use.fontawesome.com/releases/v5.13.0/css/all.css"
+            integrity="sha384-Bfad6CLCknfcloXFOyFnlgtENryhrpZCe29RTifKEixXQZ38WheV+i/6YWSzkz3V"
+            crossorigin="anonymous"
+    />
+    <script th:inline="javascript">
+
+        function addRowTable(value, route, insights) {
+
+            // COMPARE API FILEID RESPONSE WITH MODEL FILEID ATTRIBUTE, WHERE THEY ARE THE SAME
+            // ADD THAT MODEL ATTRIBUTE TO LOCAL JS LIST WHICH CAN BE DISPLAYED ON MODAL BODY
+
+            var tableRow = document.createElement("tr");
+            tableRow.className ="table-content dataRow";
+            var username = document.createElement("td");
+            username.className ="table-content";
+            var organisation = document.createElement("td");
+            organisation.className ="table-content";
+            var fileName = document.createElement("th");
+            fileName.className ="table-content";
+            fileName.scope="row";
+            var date = document.createElement("td");
+            date.className ="table-content";
+            var tag = document.createElement("td");
+            tag.className ="table-content";
+            var accessLevel = document.createElement("td");
+            accessLevel.className ="table-content";
+            // var fileType = document.createElement("td");
+            // fileType.className ="table-content";
+            var subject = document.createElement("td");
+            subject.className ="table-content";
+            var comment = document.createElement("td");
+            comment.className ="table-content";
+            fileName.innerText = value['fileName'];
+            username.innerText = value['username'];
+            organisation.innerText=value['organisationName']
+            date.innerText = value['date'];
+            tag.innerText = value['tag'];
+            accessLevel.innerText=value['accessLevel'];
+            // fileType.innerText=value['fileType'];
+            subject.innerText=value['subject'];
+            comment.innerText=value['comment'];
+
+            var link = document.createElement("td");
+            var div = document.createElement("div");
+            div.id = "wrapper";
+            var div2 = document.createElement("div");
+            div2.id = "c1";
+            var div3 = document.createElement("div");
+            div3.id = "c2";
+            var div4 = document.createElement("div");
+            div4.id = "c3";
+            var div5 = document.createElement("div");
+
+            var modalText = document.createElement("p");
+            modalText.className="modalText";
+            try{
+                modalText.id = value['fileId'];
+            }catch(err) {
+                console.log(err.message);
+            }
+
+            var fullInsights = ""
+
+            for(let j=0; j<insights.length;j++){
+                if(insights[j]['fileId'] === value['fileId']){
+                    var currentUsername = insights[j]['username'];
+                    var currentDate = insights[j]['date']
+                    var currentAction = insights[j]['action'];
+                    var currentInsight = "User: " + currentUsername + " Action: " + currentAction + " @ " + currentDate + "\n";
+                    fullInsights += currentInsight;
+                }
+            }
+            console.log("---------------------------");
+            console.log(insights);
+            console.log(value['fileId']);
+            console.log("---------------------------");
+
+            modalText.innerText = fullInsights;
+
+
+
+            // assume that all insights for this file are in this row right now DONE
+            // a single modal body DONE
+            // on row creation we can make a p element with all the required information DONE
+            // ADDING ON CLICK TO INSIGHTSBUTTON DOESNT WORK!
+            // but assign that p class that makes it not display
+            // on modal press button, we ask for a file id param in function
+            // this will allow us to remove invisible class style from element with id of fileid given
+
+            var modalContainer = document.getElementById('modal_body');
+            modalContainer.append(modalText);
+
+            var downloadLink = document.createElement("a");
+            downloadLink.href='/file/download/' + value['fileId'];
+            var downloadButton = document.createElement("button");
+            downloadButton.type="button";
+            downloadButton.className = "download-btn";
+            downloadButton.innerText="Download";
+            downloadLink.append(downloadButton);
+            div2.append(downloadLink);
+            div.append(div2);
+            var viewLink = document.createElement("a");
+            viewLink.href='/file/view/' + value['fileId'];
+            var viewButton = document.createElement("button");
+            viewButton.type="button";
+            viewButton.className = "view-btn";
+            viewButton.innerText="View";
+            viewLink.append(viewButton);
+            div3.append(viewLink);
+            div.append(div3);
+
+            // MAKE INSIGHTS BUTTON
+
+
+            var button = document.createElement("a");
+            button.className = "insights-btn"
+            button.innerText="i";
+            var currentFile = value['fileId'];
+            button.setAttribute("onclick",'showModal( "'+currentFile+'")');
+            div5.append(button);
+
+
+            if (route == "myFiles"){
+                var modifyLink = document.createElement("a");
+                modifyLink.href='/file/modify/' + value['fileId'];
+                var modifyButton = document.createElement("button");
+                modifyButton.type="button";
+                modifyButton.className = "modify-btn";
+                modifyButton.innerText="Modify";
+                modifyLink.append(modifyButton);
+                div4.append(modifyLink);
+                div.append(div4);
+                div.append(div5);
+
+
+            }
+            link.append(div);
+            tableRow.append(fileName);
+            tableRow.append(username);
+            tableRow.append(organisation);
+            tableRow.append(date);
+            tableRow.append(subject);
+            tableRow.append(comment);
+            tableRow.append(tag);
+            tableRow.append(accessLevel);
+            // tableRow.append(fileType);
+            tableRow.append(link);
+
+            var table = document.getElementById("file-table");
+            table.append(tableRow);
+        }
+        function loadTable(evt,route){
+            openFiles(evt,route);
+        }
+
+        let fileIds = [];
+        let fileInsights = [];
+
+        function openFiles(evt, route) {
+
+            let div;
+            var i, tablinks;
+            var fullRoute = "http://localhost:8080/api/user/" + route;
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            var dataRowsToRemove = document.getElementsByClassName("dataRow");
+            var index = 0;
+            while(index < dataRowsToRemove.length){
+                dataRowsToRemove[index].remove();
+            }
+
+            var auditList = []
+
+            /*<![CDATA[*/
+
+            /*[# th:each="audit : ${audits}"]*/
+
+            auditList.push(/*[[${audit}]]*/)
+
+            /*[/]*/
+
+            /*]]>*/
+
+
+            // Create a request variable and assign a new XMLHttpRequest object to it.
+            var request = new XMLHttpRequest()
+
+            // Open a new connection, using the GET request on the URL endpoint
+            request.open('GET', fullRoute, true)
+            console.log("Getting the Files");
+            request.onload = function () {
+                // Begin accessing JSON data here
+                var json = request.responseText;
+                var files = JSON.parse(json);
+
+                for (let j = 0; j < files.length; j++) {
+                    for (let k = 0; k< auditList.length; k++){
+                        if(files[j]['fileId'] === auditList[k]['fileId']){
+                            fileInsights.push(auditList[k]);
+                        }
+
+                        if(!fileIds.includes(auditList[k]['fileId'])){
+                            fileIds.push(auditList[k]['fileId']);
+                        }
+                    }
+                    addRowTable(files[j], route,fileInsights);
+                }
+
+            }
+
+            // Send request
+            request.send()
+
+            evt.currentTarget.className += " active";
+        }
+
+        function niceInputs() {
+            [].forEach.call(document.getElementsByClassName("form-input"), (form_input) => {
+                form_input.getElementsByTagName("input")[0].addEventListener("focus", () => {
+                    form_input.classList.add("active");
+                });
+
+                form_input.getElementsByTagName("input")[0].addEventListener("focusout", () => {
+                    if (form_input.getElementsByTagName("input")[0].value === "") {
+                        form_input.classList.remove("active");
+                    }
+                });
+
+                if (form_input.getElementsByTagName("input")[0].value !== "") {
+                    form_input.classList.add("active");
+                }
+
+            });
+
+        }
+
+        window.onload = () => {
+            niceInputs();
+        }
+        function searchTerm(evt){
+            var term = document.forms["searchForm"]["search"].value;
+            loadTable(evt,"searchFiles/" + term);
+            return false;
+
+        }
+
+        function showModal(fileId){
+            const modal_container = document.getElementById("modal_container");
+            const insights_p = document.getElementById(fileId);
+
+            insights_p.classList.add("show");
+
+            modal_container.classList.add("show");
+
+
+        }
+
+        function closeModal(){
+            const modal_container = document.getElementById("modal_container");
+            const insightPs = document.getElementsByClassName('modalText');
+            Array.from(insightPs).forEach((element)=>{element.classList.remove('show')});
+            modal_container.classList.remove("show");
+
+        }
+
+
+    </script>
+</head>
+
+
+<body onload="loadTable(event, 'myFiles');">
+    <div layout:fragment="content">
+        <div style="display: inline-flex;width: 87.5%;padding-bottom: 10px">
+            <div style="width: 50%;display: flex;justify-content: left;align-items: start;">
+                <h1 style="color: white" th:text = "${organisationName}"></h1>
+            </div>
+            <div style="width: 25%;display: flex;justify-content: right;align-items: end;">
+                <a/>
+            </div>
+            <div style="width: 25%;display: flex;justify-content: right;align-items: end;">
+                <a style="color: white; text-decoration: none" href="/file">UPLOAD A FILE</a>
+            </div>
+            <div style="width: 25%;display: flex;justify-content: right;align-items: end;">
+                <a style="color: white; text-decoration: none" href="/logout">LOG OUT</a>
+            </div>
+        </div>
+        <div class="--graphium-window">
+            <div>
+                <div style="background-color: #f1f1f1">
+                    <button class="tab-btn" onclick="loadTable(event, 'myFiles')">My Files</button>
+                    <button class="tab-btn" onclick="loadTable(event, 'allFiles')">All Files</button>
+                    <button class="tab-btn" onclick="loadTable(event, 'myOrgFiles')">Organisation Files</button>
+                    <button class="tab-btn" onclick="loadTable(event, 'myPartnerFiles')">Partners Files</button>
+                    <button class="tab-btn" onclick="loadTable(event, 'publicFiles')" >Public Files</button>
+                </div>
+
+                <div>
+                    <div>
+                        <table id="file-table" style="width: 100%;padding-left: 10px;padding-right: 10px">
+                            <thead>
+                            <tr>
+                                <th class="table-heading" scope="col">File Name</th>
+                                <th class="table-heading" scope="col">Author</th>
+                                <th class="table-heading" scope="col">Organisation</th>
+                                <th class="table-heading" scope="col">Date</th>
+                                <th class="table-heading" scope="col">Subject</th>
+                                <th class="table-heading" scope="col">Comment</th>
+                                <th class="table-heading" scope="col">Tag</th>
+                                <th class="table-heading" scope="col">Access Level</th>
+<!--                                <th class="table-heading" scope="col">File Type</th>-->
+                                <th class="table-heading" scope="col">
+                                    <form action="/searchFiles" th:method="get">
+                                        <input class="search-input" aria-describedby="Enter a term to search for files." id="search" name="search" placeholder="Search for file" type="text" value=""/>
+                                    </form>
+                                </th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-container" id="modal_container">
+                    <div class="modal" id="modal_body">
+                        <div style="width: 100%; padding: 10px;">
+                        <button style="background-color:white;border: none; cursor: pointer;float: right;" onclick="closeModal()">X</button>
+                        </div>
+                        <h1 style="color:black">Document Insights</h1>
+                    </div>
+                </div>
+            </div>
+
+            </div>
+    </div>
+</body>
+</html>

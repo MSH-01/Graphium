@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main-layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Upload File</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/files.css">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     <script>
+        function niceInputs() {
+            [].forEach.call(document.getElementsByClassName("form-input"), (form_input) => {
+                form_input.getElementsByTagName("input")[0].addEventListener("focus", () => {
+                    form_input.classList.add("active");
+                });
+
+                form_input.getElementsByTagName("input")[0].addEventListener("focusout", () => {
+                    if (form_input.getElementsByTagName("input")[0].value === "") {
+                        form_input.classList.remove("active");
+                    }
+                });
+
+                if (form_input.getElementsByTagName("input")[0].value !== "") {
+                    form_input.classList.add("active");
+                }
+
+            });
+
+        }
+
+        window.onload = () => {
+            niceInputs();
+        }
+    </script>
+</head>
+
+
+<body>
+<div layout:fragment="content">
+    <div style="display: inline-flex;width: 87.5%;padding-bottom: 10px">
+        <div style="width: 50%;display: flex;justify-content: left;align-items: start;">
+            <h1 style="color: white" th:text = "${organisationName}"></h1>
+        </div>
+        <div style="width: 25%;display: flex;justify-content: right;align-items: end;">
+            <a/>
+        </div>
+        <div style="width: 25%;display: flex;justify-content: right;align-items: end;">
+            <a style="color: white; text-decoration: none" href="/file">UPLOAD A FILE</a>
+        </div>
+        <div style="width: 25%;display: flex;justify-content: right;align-items: end;">
+            <a style="color: white; text-decoration: none" href="/logout">LOG OUT</a>
+        </div>
+
+    </div>
+    <div class="--graphium-window">
+        <div style="justify-content: center;display: flex;">
+            <form th:action="@{/upload}" enctype="multipart/form-data" th:method="post" th:object="${fileForm}" style="width: 90%;">
+
+                <input th:field="*{fileId}" type="hidden"/>
+                <div style="display: flex; justify-content: center; width: 100%;padding: 10px">
+                    <h2>Upload a file.</h2>
+                </div>
+                <div style="display: inline-flex; width: 100%;padding: 10px">
+                    <div style="width: 100%;justify-content: left;align-content: center;display: flex;" class = "col-md">
+                        <div style="width: 100%;display: flex;justify-content: center;" class="mb-3">
+                            <input th:field="*{file}" type="file" name="file" id="file"/>
+                            <label for="file">Choose a file</label>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: inline-flex; width: 100%;padding: 10px">
+                    <div style="width: 100%;justify-content: center;align-content: center;display: flex;" class = "col-md">
+                        <div style="width: 100%" class="mb-3">
+                            <label class="text-secondary" for="fileName">Upload Name: </label><br>
+                            <input class="userInput" th:field="*{fileName}" type="text" required/>
+                            <div class="alert alert-warning" th:errors="*{fileName}" th:if="${#fields.hasErrors('fileName')}">Comment
+                                Error
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div style="display: inline-flex;width: 100%;padding: 10px;" >
+                    <div class="alert alert-danger" th:if="${errorMessage != null}" th:text="${errorMessage}">File Error</div>
+                </div>
+                <div style="display: inline-flex;width: 100%;padding: 10px;">
+                    <div style="width: 50%;justify-content: left;align-content: center;display: flex;"  class = "col-md-6">
+                        <div style="width: 80%" class="mb-3">
+                            <label class="text-secondary" for="subject">Subject:</label><br>
+                            <input class="userInput" th:field="*{subject}" type="text" />
+
+                        </div>
+                    </div>
+                    <div style="width: 50%;justify-content: left;align-content: center;display: flex;"  class = "col-md-6">
+                        <div style="width: 80%" class="mb-3">
+                            <label class="text-secondary" for="comment">Comment: </label><br>
+                            <input class="userInput" th:field="*{comment}" type="text"/>
+                            <div class="alert alert-warning" th:errors="*{comment}" th:if="${#fields.hasErrors('comment')}">Comment
+                                Error
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div style="display: inline-flex;width: 100%;padding: 10px;" >
+                    <div style="width: 50%;justify-content: left;align-content: center;display: flex;"  class = "col-lg-6">
+                        <div class = "form-check form-check-inline">
+                            <div class="mb-3">
+                                <label class="form-label text-secondary" for="tag">Tag: </label><br>
+
+                                <input class="form-check-input" type="radio" id="urgent" name="tag" value="urgent">
+                                <label class="form-check-label" for="urgent">Urgent</label>
+                                <input class="form-check-input" type="radio" id="draft" name="tag" value="draft">
+                                <label class="form-check-label" for="draft">Draft</label>
+                                <input class="form-check-input" type="radio" id="final" name="tag" value="final">
+                                <label class="form-check-label" for="final">Final</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="width: 50%;justify-content: left;align-content: center;display: flex;"  class = "col-lg-6">
+                        <div class = "form-check form-check-inline">
+                            <div class="mb-3">
+                                <label class="form-label text-secondary" for="accessLevel">Access Level: </label><br>
+                                <input class="form-check-input" type="radio" id="myOrganisation" name="accessLevel" value="myOrganisation">
+                                <label class="form-check-label" for="myOrganisation">My Organisation</label>
+                                <input class="form-check-input" type="radio" id="myPartners" name="accessLevel" value="private">
+                                <label class="form-check-label" for="myPartners">My Partners</label>
+
+
+                                <input class="form-check-input" type="radio" id="public" name="accessLevel" value="public">
+                                <label class="form-check-label" for="public">Public</label>
+                                <input class="form-check-input" type="radio" id="private" name="accessLevel" value="private">
+                                <label class="form-check-label" for="private">Private</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: inline-flex;width: 100%;padding: 10px;">
+                    <div  style="width: 100%;justify-content: center;align-content: center;display: flex;" class="row">
+                        <div style="padding: 10px; width: 100%;justify-content: center;display: flex;" class="col-sm">
+                            <button style="background-color: #266C91; width: 70%; height: 30px;border-radius: 5px;color: white;border: 1px solid #2b80a9;cursor: pointer">Upload</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+</div>
+</div>
+</body>
+
+</html>
